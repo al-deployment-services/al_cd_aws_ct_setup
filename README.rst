@@ -54,6 +54,18 @@ Arguments
   --uid uid    Cloudtrail log source ID (add this only if you want to delete it)
   --dc DC      Alert Logic Data center assignment, i.e. defender-us-denver, defender-us-ashburn or defender-uk-newport
 
+
+Exit Code
+----------
+If you going to integrate this script to another orchestration tool, you can use the exit code to detect the status:
+
+* 0 = script run successfully
+* 1 = missing or invalid argument
+* 2 = environment issue such as invalid SQS arn or invalid API key
+* 3 = timeout 
+
+WARNING: This script will not revert back any changes due to timeout, any commands / API calls that it executed prior to timeout will run until completed, even if the script exit due to timeout.
+
 License and Authors
 ===================
 License:

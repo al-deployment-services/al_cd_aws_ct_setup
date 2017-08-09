@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os.path, json, requests, logging, datetime, argparse
+import os.path, json, requests, logging, datetime, argparse, sys
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 #suppres warning for certificate
@@ -7,6 +7,13 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 #API headers and url
 HEADERS = {'content-type': 'application/json'}
+
+#exit code standard:
+#0 = OK
+#1 = argument parser issue
+#2 = environment issue such as invalid environment id, invalid password, or invalid scope
+#3 = timeout
+EXIT_CODE = 0
 
 def get_api_endpoint(target_dc):
 	if target_dc == "defender-us-denver":
@@ -90,6 +97,7 @@ def prep_cloudtrail(cred_id, sqs_name, region, ct_name):
 
 #MAIN MODULE
 if __name__ == '__main__':
+	EXIT_CODE=0
 	
 	#Prepare parser and argument
 	parent_parser = argparse.ArgumentParser()
@@ -115,10 +123,12 @@ if __name__ == '__main__':
 	del_parser.add_argument("--cid", required=True, help="Alert Logic Customer CID as target")	
 	del_parser.add_argument("--uid", required=True, help="Cloudtrail source ID that you wish to delete")
 	del_parser.add_argument("--dc", required=True, help="Alert Logic Data center assignment, i.e. defender-us-denver, defender-us-ashburn or defender-uk-newport")
-
-	#Parser argument for Delete environment
 	
-	args = parent_parser.parse_args()
+	try:
+		args = parent_parser.parse_args()
+	except:
+		EXIT_CODE = 1
+		sys.exit(EXIT_CODE)
 
 	#Set argument to variables
 	if args.mode == "ADD":
@@ -147,6 +157,7 @@ if __name__ == '__main__':
 			if CRED_ID != "n/a":
 				print ("Cred ID : " + CRED_ID)
 				print ("### Creating Cloud Trail Link ###")
+				#Create cloudtrail log source by using credentials ID created previously
 				CT_PAYLOAD = prep_cloudtrail(CRED_ID, TARGET_SQS_NAME, TARGET_SQS_REGION, TARGET_CT_NAME)
 				CT_RESULT = post_ct_source(APIKEY, ALERT_LOGIC_LM, str(json.dumps(CT_PAYLOAD, indent=4)), TARGET_CID)
 				CT_ID = str(CT_RESULT["s3aws"]["id"])
@@ -154,12 +165,15 @@ if __name__ == '__main__':
 				if CT_ID != "n/a":
 					print ("Cloudtrail Source ID : " + CT_ID)
 				else:
+					EXIT_CODE=2
 					print ("### Failed to create Cloudtrail source, see response code + reason above, stopping .. ###")	
 
 			else:
+				EXIT_CODE=2
 				print ("### Failed to create credentials, see response code + reason above, stopping .. ###")
 
 		else:
+			EXIT_CODE=2
 			print ("Invalid data center assignment, use -h for more details, stopping ...")
 
 	elif args.mode == "DEL":
@@ -185,7 +199,8 @@ if __name__ == '__main__':
 			del_credentials(APIKEY, ALERT_LOGIC_LM, CRED_ID, TARGET_CID)
 
 		else:
+			EXIT_CODE=2
 			print ("Failed to find the Cloudtrail source ID, see response code + reason above, stopping ..")
 
-
 	print ("\n### Script stopped - " + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")) + "###\n")	
+	sys.exit(EXIT_CODE)
