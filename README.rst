@@ -2,7 +2,7 @@ Wrapper for AWS Cloudtrail Collection Source setup in Alert Logic (Log Manager)
 ===============================================================================
 This script will setup AWS Cloudtrail log source link in Alert Logic (Log Manager). Two components that will be created:
 
-- New Credentials based on the provided IAM role + external ID 
+- New Credentials based on the provided IAM role + external ID
 - New Cloudtrail log source based on the given SQS name
 
 Full manual step by step reference can be found in here: https://docs.alertlogic.com/install/cloud/amazon-web-services-log-manager-direct-linux.htm
@@ -43,10 +43,10 @@ Note
 Arguments
 ----------
   -h, --help   show this help message and exit
-  --key KEY    Alert Logic Log Manager user API Key  
-  --cid CID    Alert Logic Customer CID as target for this deployment  
+  --key KEY    Alert Logic Log Manager user API Key
+  --cid CID    Alert Logic Customer CID as target for this deployment
   --arn ARN    Cross Account IAM role arn for Log Manager Cloudtrail
-  --ext EXT    External ID specified in IAM role trust relationship
+  --ext EXT    External ID specified in IAM role trust relationship (value must equal to CID)
   --cred CRED  Credential name, free form label
   --sqs SQS    Name of the SQS that subscribed to Cloudtrail SNS
   --reg REG    AWS region where the is SQS deployed, i.e. us-east-1
@@ -62,7 +62,7 @@ If you going to integrate this script to another orchestration tool, you can use
 * 0 = script run successfully
 * 1 = missing or invalid argument
 * 2 = environment issue such as invalid SQS arn or invalid API key
-* 3 = timeout 
+* 3 = timeout
 
 WARNING: This script will not revert back any changes due to timeout, any commands / API calls that it executed prior to timeout will run until completed, even if the script exit due to timeout.
 
@@ -71,5 +71,5 @@ License and Authors
 License:
 Distributed under the Apache 2.0 license.
 
-Authors: 
+Authors:
 Welly Siauw (welly.siauw@alertlogic.com)
